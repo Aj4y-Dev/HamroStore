@@ -5,6 +5,9 @@ import morgan from "morgan";
 import { connectDB } from './db';
 import { ok } from './utils/envelope';
 import { clerkMiddleware } from '@clerk/express';
+import { authRouter } from './routes/auth.routes';
+import { notFound } from './middleware/notFound';
+import { errorHandler } from './middleware/errorHandler';
 
 
 async function mainEntryFunction() {
@@ -21,12 +24,18 @@ async function mainEntryFunction() {
 
     app.use(express.json());
     app.use(morgan("dev"));
-    app.use(clerkMiddleware())
+    app.use(clerkMiddleware());
 
 
     app.get("/health", (_req, res) => {
         res.status(200).json(ok({ message: "Server is healthy/in running state" }));
     });
+
+    //auth routes
+    app.use("/auth", authRouter);
+
+    app.use(notFound);
+    app.use(errorHandler)
 
     const port = process.env.PORT || 5000;
 
